@@ -32,7 +32,7 @@
           <form action="/submit" method="post">
             <textarea class="text" name="task" cols="40" rows="3"
               placeholder="Improve your life , by achieving  little tasks"></textarea>
-            <button type="submit" class="btn btn-outline-light">Add Task</button>
+            <button type="submit"  class="btn btn-outline-light">Add Task</button>
           </form>
 
         </div>
@@ -42,8 +42,11 @@
           <% if (locals.todos) { %>
            <% todos.forEach(element => { %>
           <ol>
-            <input class="larger" type="checkbox" name="tasksBox" >
-            <%= element %>
+            <form action="/delete" method="post">
+              <input class="larger" type="checkbox" value="<%= element._id %>" name="tasksBox" onChange="this.form.submit()" >
+              <%= element.name %>
+            </form>
+          
           </ol>
            <% }) %>
           <% } %>
@@ -61,10 +64,3 @@
 
 </html>
 
-<!-- 
-<h2>Create your task 💥</h2>
-<form action="/submit" method="post">
-  <textarea class="text" name="task" cols="30" rows="10"
-    placeholder="Improve your life , by achieving  little tasks"></textarea>
-</form>
-<button type="button" class="btn btn-outline-primary">Add Task</button> -->

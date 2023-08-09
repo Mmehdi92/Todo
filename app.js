@@ -1,10 +1,33 @@
 import bodyParser from "body-parser";
 import express from "express";
+import mongoose from "mongoose";
+const mongoURL = "mongodb://127.0.0.1:27017/todoDb";
 
 const app = express();
 const port = 3000;
+
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
+
+mongoose.connect(mongoURL);
+
+const itemSchema = new mongoose.Schema({
+  name: String,
+});
+
+const Item = mongoose.model("Item", itemSchema);
+
+const today = new Item({
+  name: "this is the first item",
+});
+
+const tomorrow = new Item({
+  name: "this is the second item",
+});
+
+const third = new Item({
+  name: "this is the last item",
+});
 
 function dailyMotivaiton() {
   const dailyMotivations = [
@@ -44,23 +67,44 @@ function dailyMotivaiton() {
   return dailyMotivations[Math.floor(Math.random() * dailyMotivations.length)];
 }
 
-dailyMotivaiton();
-var tasks = ["Daily Task Completed", "Next Chapter", "Ejs training"];
-app.get("/", (req, res) => {
-  res.render("index.ejs", {
-    TodaysMotivation: dailyMotivaiton(),
-    todos: tasks,
-  });
+const defaultItem = [today, tomorrow, third];
+
+
+app.get("/:customListName",(req,res)=>{
+  console.log(req.params.customListName)
+})
+
+
+app.get("/", async (req, res) => {
+  const founditems = await Item.find({});
+  if (founditems.length === 0) {
+    await Item.insertMany(defaultItem);
+    res.redirect("/");
+  } else {
+    res.render("index.ejs", {
+      TodaysMotivation: dailyMotivaiton(),
+      todos: founditems,
+    });
+  }
 });
 
-app.post("/submit", (req, res) => {
+app.post("/submit", async (req, res) => {
   const newTask = req.body.task;
-  tasks.push(newTask);
-  res.render("index.ejs", { todos: tasks });
-  console.log(tasks.length);
+  const item = new Item({
+    name: newTask,
+  });
+  await Item.collection.insertOne(item);
+  res.redirect("/");
+});
+
+app.post("/delete", async (req, res) => {
+  const itemSelected = req.body.tasksBox;
+  if (itemSelected) {
+    await Item.deleteOne({ _id: itemSelected });
+  }
+  res.redirect("/");
 });
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
-
